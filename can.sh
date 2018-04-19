@@ -1,0 +1,4 @@
+can() {
+  ./cancl &
+  ./cansv
+}
