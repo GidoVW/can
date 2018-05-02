@@ -13,7 +13,7 @@
 #include <sys/ioctl.h>
 #include <net/if.h>
 
-#include "log_it.h"
+#include "logit.h"
 
 #define STDBUF_SIZE 256
 
@@ -29,7 +29,7 @@ int main(int argc, char *argv[])
 
   sockfd = socket(PF_CAN, SOCK_RAW, CAN_RAW);
   if (sockfd < 0)
-    _err("socket");
+    syserr("socket");
 
   strncpy(ifr.ifr_name, "vcan0", 6);
   ioctl(sockfd, SIOCGIFINDEX, &ifr);
@@ -39,7 +39,7 @@ int main(int argc, char *argv[])
 
   ret = bind(sockfd, (struct sockaddr *)&addr, sizeof(struct sockaddr));
   if (ret < 0)
-    _err("bind");
+    syserr("bind");
 
   for(int j = 0; j < 5; j++) {
 
@@ -50,25 +50,25 @@ int main(int argc, char *argv[])
     frame.data[2] = j*10+3;
     frame.data[3] = j*10+4;
 
-    _log("Writing (%d): %d%d%d%d", frame.can_dlc,
-                                   frame.data[0],
-                                   frame.data[1],
-                                   frame.data[2],
-                                   frame.data[3]);
+    logit("Writing (%d): %d%d%d%d", frame.can_dlc,
+                                    frame.data[0],
+                                    frame.data[1],
+                                    frame.data[2],
+                                    frame.data[3]);
 
     ret = send(sockfd, &frame, sizeof(frame), 0);
     if (ret < 0)
-      _err("send");
+      syserr("send");
     usleep(1); /* Return to scheduler */
   }
 
   /* Send termination */
   frame.data[0] = 255;
   frame.can_dlc = 1;
-  _log("Closing communication - sending 255 termination code.");
+  logit("Closing communication - sending 255 termination code.");
   ret = send(sockfd, &frame, sizeof(frame), 0);
   if (ret < 0)
-    _err("send");
+    syserr("send");
 
   return 0;
 }
